@@ -113,13 +113,18 @@ io.on('connection', (socket) => {
         // Simplified audioInput handler without rate limiting
         socket.on('audioInput', async (audioData) => {
             try {
+                console.log('Received audioInput event, data length:', typeof audioData === 'string' ? audioData.length : 'not a string');
+                
                 // Convert base64 string to Buffer
                 const audioBuffer = typeof audioData === 'string'
                     ? Buffer.from(audioData, 'base64')
                     : Buffer.from(audioData);
+                
+                console.log('Converted to buffer, size:', audioBuffer.length);
 
                 // Stream the audio
                 await session.streamAudio(audioBuffer);
+                console.log('Audio data streamed successfully');
 
             } catch (error) {
                 console.error('Error processing audio:', error);
@@ -132,8 +137,9 @@ io.on('connection', (socket) => {
 
         socket.on('promptStart', async () => {
             try {
-                console.log('Prompt start received');
+                console.log('Prompt start received for session:', socket.id);
                 await session.setupPromptStart();
+                console.log('Prompt start processed successfully');
             } catch (error) {
                 console.error('Error processing prompt start:', error);
                 socket.emit('error', {
@@ -145,8 +151,9 @@ io.on('connection', (socket) => {
 
         socket.on('systemPrompt', async (data) => {
             try {
-                console.log('System prompt received', data);
+                console.log('System prompt received for session:', socket.id, 'content:', data);
                 await session.setupSystemPrompt(undefined, data);
+                console.log('System prompt processed successfully');
             } catch (error) {
                 console.error('Error processing system prompt:', error);
                 socket.emit('error', {
@@ -158,8 +165,9 @@ io.on('connection', (socket) => {
 
         socket.on('audioStart', async (data) => {
             try {
-                console.log('Audio start received', data);
+                console.log('Audio start received for session:', socket.id);
                 await session.setupStartAudio();
+                console.log('Audio start processed successfully');
             } catch (error) {
                 console.error('Error processing audio start:', error);
                 socket.emit('error', {
@@ -171,14 +179,20 @@ io.on('connection', (socket) => {
 
         socket.on('stopAudio', async () => {
             try {
-                console.log('Stop audio requested, beginning proper shutdown sequence');
+                console.log('Stop audio requested for session:', socket.id, 'beginning proper shutdown sequence');
 
                 // Chain the closing sequence
                 await Promise.all([
                     session.endAudioContent()
-                        .then(() => session.endPrompt())
-                        .then(() => session.close())
-                        .then(() => console.log('Session cleanup complete'))
+                        .then(() => {
+                            console.log('Audio content ended successfully');
+                            return session.endPrompt();
+                        })
+                        .then(() => {
+                            console.log('Prompt ended successfully');
+                            return session.close();
+                        })
+                        .then(() => console.log('Session cleanup complete for session:', socket.id))
                 ]);
             } catch (error) {
                 console.error('Error processing streaming end events:', error);
