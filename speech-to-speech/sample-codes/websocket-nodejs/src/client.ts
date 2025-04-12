@@ -491,6 +491,7 @@ export class NovaSonicBidirectionalStreamClient {
 
   // Process the response stream from AWS Bedrock
   private async processResponseStream(sessionId: string, response: any): Promise<void> {
+    console.log(`Starting to process response stream for session ${sessionId}`);
     const session = this.activeSessions.get(sessionId);
     if (!session) return;
 
@@ -500,6 +501,10 @@ export class NovaSonicBidirectionalStreamClient {
           console.log(`Session ${sessionId} is no longer active, stopping response processing`);
           break;
         }
+
+        // Simple log to see what's coming from AWS Bedrock
+        console.log(`AWS Bedrock event type: ${event.type}, content type: ${event.contentType || 'none'}`);
+        
         if (event.chunk?.bytes) {
           try {
             this.updateSessionActivity(sessionId);
