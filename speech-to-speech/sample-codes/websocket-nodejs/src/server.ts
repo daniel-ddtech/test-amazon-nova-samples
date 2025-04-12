@@ -2,12 +2,11 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
-import { fromIni } from "@aws-sdk/credential-providers";
 import { NovaSonicBidirectionalStreamClient } from './client';
 import { Buffer } from 'node:buffer';
 
 // Configure AWS credentials
-const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'default';
+const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 
 // Create Express app and HTTP server
 const app = express();
@@ -20,8 +19,11 @@ const bedrockClient = new NovaSonicBidirectionalStreamClient({
         maxConcurrentStreams: 10,
     },
     clientConfig: {
-        region: process.env.AWS_REGION || "us-east-1",
-        credentials: fromIni({ profile: AWS_PROFILE_NAME })
+        region: AWS_REGION,
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+        }
     }
 });
 
