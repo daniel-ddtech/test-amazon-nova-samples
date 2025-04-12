@@ -7,7 +7,7 @@ import { NovaSonicBidirectionalStreamClient } from './client';
 import { Buffer } from 'node:buffer';
 
 // Configure AWS credentials
-const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'bedrock-test';
+const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'default';
 
 // Create Express app and HTTP server
 const app = express();
